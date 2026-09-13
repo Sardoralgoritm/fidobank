@@ -1,0 +1,11 @@
+# IntelliJ
+.idea/
+*.iml
+
+# Maven build natijasi
+target/
+
+# Server sozlamasi, repo'ga tegishli emas
+cloudflared-config.yml
+
+.idea/ qatori ildizdagi .idea ga ham, app\.idea ga ham ta'sir qiladi.

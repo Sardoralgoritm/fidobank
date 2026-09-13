@@ -1,0 +1,43 @@
+services:
+
+  oracle:
+    image: gvenzl/oracle-xe:21-slim
+    container_name: fidobank-oracle
+    restart: unless-stopped
+    environment:
+      ORACLE_PASSWORD: Oracle_123
+      APP_USER: bank
+      APP_USER_PASSWORD: bank123
+    ports:
+      - "1521:1521"
+    volumes:
+      # Diqqat: /container-entrypoint-initdb.d APP_USER yaratilishidan OLDIN
+      # ishlaydi, shuning uchun sxema u yerdan yuklanmaydi (ORA-01918).
+      # Sxemani setup.sh baza tayyor bo'lgach BANK nomidan yuklaydi.
+      - oracle-data:/opt/oracle/oradata
+    healthcheck:
+      test: ["CMD", "healthcheck.sh"]
+      interval: 10s
+      timeout: 5s
+      retries: 60
+      start_period: 30s
+
+  app:
+    build: ./app
+    container_name: fidobank-app
+    depends_on:
+      oracle:
+        condition: service_healthy
+    environment:
+      # Oracle konteynerda: shu qatorni o'zgartirmang.
+      # Windows'dagi XE'ga ulanmoqchi bo'lsangiz:
+      #   jdbc:oracle:thin:@//<WINDOWS_IP>:1521/XEPDB1
+      DB_URL: jdbc:oracle:thin:@//oracle:1521/XEPDB1
+      DB_USER: bank
+      DB_PASS: bank123
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+volumes:
+  oracle-data:
